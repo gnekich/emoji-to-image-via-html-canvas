@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Render Emoji in Html Canvas</title>
+    <link rel="stylesheet" href="/reset.css" />
+    <style>
+      body {
+        background-color: #262626;
+        color: aliceblue;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      #canvas {
+        background-image: linear-gradient(45deg, #999 25%, transparent 25%),
+          linear-gradient(-45deg, #999 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #999 75%),
+          linear-gradient(-45deg, transparent 75%, #999 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        margin: 10px;
+        border: 1px solid black;
+      }
+      #render-emoji-canvas {
+        background-color: #4caf50; /* Green */
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition-duration: 0.4s;
+      }
+      #save-canvas {
+        background-color: #4caf50; /* Green */
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition-duration: 0.4s;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas" width="256" height="256"></canvas>
+    <br />
+    <form id="emoji-form">
+      <label for="emoji-input">Emoji:</label>
+      <input
+        type="text"
+        id="emoji-input"
+        placeholder="Enter emoji"
+        value="🧑‍🔬"
+      />
+
+      <br />
+      <label for="font-size">Font Size:</label>
+      <input
+        type="text"
+        id="font-size"
+        placeholder="Enter font size"
+        value="146"
+      />
+      <br />
+      <label for="canvas-size">Canvas Size:</label>
+      <input
+        type="text"
+        id="canvas-size"
+        placeholder="Enter canvas size"
+        value="256"
+      />
+      <br />
+      <button id="render-emoji-canvas">Render Emoji</button>
+      <br />
+      <button id="save-canvas">Render & Download Canvas</button>
+    </form>
+    <script>
+      const canvas = document.querySelector("#canvas");
+      const context = canvas.getContext("2d");
+
+      const form = document.querySelector("#emoji-form");
+      const input = document.querySelector("#emoji-input");
+      const fontSizeInput = document.querySelector("#font-size");
+      const renderEmojiButton = document.querySelector("#render-emoji-canvas");
+      const canvasSizeInput = document.querySelector("#canvas-size");
+      const saveButton = document.querySelector("#save-canvas");
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+      });
+
+      renderEmojiButton.addEventListener("click", function (event) {
+        const size = parseInt(canvasSizeInput.value, 10);
+        if (!isNaN(size)) {
+          canvas.width = size;
+          canvas.height = size;
+          renderEmojiButton.click();
+        }
+
+        const emoji = input.value;
+
+        // Clear the canvas
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        // The size of the emoji is set with the font
+        context.font = fontSizeInput.value + "px serif";
+
+        // use these alignment properties for "better" positioning
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        // draw the emoji
+        context.fillText(emoji, canvas.width / 2, canvas.height / 2);
+      });
+
+      saveButton.addEventListener("click", function () {
+        renderEmojiButton.click();
+
+        const dataUrl = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.download = `icon_${canvas.height}_f${fontSizeInput.value}_${input.value}.png`;
+        link.href = dataUrl;
+        link.click();
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        renderEmojiButton.click();
+      });
+    </script>
+  </body>
+</html>
