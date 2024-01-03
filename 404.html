@@ -3,8 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Render Emoji in Html Canvas, save emoji as png image, emoji, .png"
+    />
     <title>Render Emoji in Html Canvas</title>
-    <link rel="stylesheet" href="/reset.css" />
+    <link rel="stylesheet" href="/assets/reset.css" />
+    <link rel="icon" href="/assets/favicon.ico" />
     <style>
       body {
         background-color: #262626;
@@ -24,6 +29,7 @@
         background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         margin: 10px;
         border: 1px solid black;
+        cursor: pointer;
       }
       #render-emoji-canvas {
         background-color: #4caf50; /* Green */
@@ -53,22 +59,89 @@
         border-radius: 4px;
         transition-duration: 0.4s;
       }
+
+      .fab {
+        font-size: 24px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.15);
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .fab:hover {
+        background-color: #45a049;
+      }
+
+      input[type="number"],
+      input[type="text"] {
+        width: 80%;
+        box-sizing: border-box;
+        border: 2px solid #888;
+        border-radius: 4px;
+        font-size: 14px;
+        background-color: #555;
+        color: #fff;
+        padding: 4px 10px 4px 10px;
+        transition: width 0.4s ease-in-out;
+      }
+
+      input[type="number"]:focus,
+      input[type="text"]:focus {
+        border-color: #aaa;
+        outline: none;
+      }
+
+      button {
+        background-color: #4acdc4;
+        border: none;
+        color: white;
+        padding: 7px 12px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 4px;
+        transition-duration: 0.4s;
+      }
     </style>
   </head>
   <body>
-    <canvas id="canvas" width="256" height="256"></canvas>
+    <div>
+      <canvas id="canvas" width="256" height="256"></canvas>
+      <br />
+      <div style="display: flex; flex-direction: column">
+        <button id="copyClipboardItem">Copy as ClipboardItem</button>
+        <button id="copyDataUrl">Copy as Data URL</button>
+        <button id="copyBase64">Copy as Base64</button>
+        <button id="downloadCanvasButton">Download as File</button>
+      </div>
+    </div>
     <br />
     <form id="emoji-form">
       <label for="emoji-input">Emoji:</label>
+      <br />
       <input
         type="text"
         id="emoji-input"
         placeholder="Enter emoji"
         value="🧑‍🔬"
       />
-
       <br />
       <label for="font-size">Font Size:</label>
+      <br />
       <input
         type="text"
         id="font-size"
@@ -84,10 +157,20 @@
         value="256"
       />
       <br />
+      <label for="x-offset">x offset:</label>
+      <input type="text" id="x-offset" placeholder="Enter x offset" value="0" />
+      <br />
+      <label for="y-offset">y offset:</label>
+      <input type="text" id="y-offset" placeholder="Enter y offset" value="0" />
+      <br />
       <button id="render-emoji-canvas">Render Emoji</button>
       <br />
       <button id="save-canvas">Render & Download Canvas</button>
     </form>
+
+    <button id="fab-open-source" class="fab">
+      <img src="/assets/ic_code_24dp.svg" alt="GitHub Icon" />
+    </button>
     <script>
       const canvas = document.querySelector("#canvas");
       const context = canvas.getContext("2d");
@@ -97,7 +180,10 @@
       const fontSizeInput = document.querySelector("#font-size");
       const renderEmojiButton = document.querySelector("#render-emoji-canvas");
       const canvasSizeInput = document.querySelector("#canvas-size");
+      const xOffsetInput = document.querySelector("#x-offset");
+      const yOffsetInput = document.querySelector("#y-offset");
       const saveButton = document.querySelector("#save-canvas");
+      const fabGitHubButton = document.querySelector("#fab-open-source");
 
       form.addEventListener("submit", function (event) {
         event.preventDefault();
@@ -113,6 +199,9 @@
 
         const emoji = input.value;
 
+        const xOffset = parseInt(xOffsetInput.value, 10) || 0;
+        const yOffset = parseInt(yOffsetInput.value, 10) || 0;
+
         // Clear the canvas
         context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -123,17 +212,95 @@
         context.textAlign = "center";
         context.textBaseline = "middle";
         // draw the emoji
-        context.fillText(emoji, canvas.width / 2, canvas.height / 2);
+        context.fillText(
+          emoji,
+          canvas.width / 2 + xOffset,
+          canvas.height / 2 + yOffset
+        );
       });
+
+      const downloadCanvas = function (filename) {
+        const dataUrl = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.download = filename
+          ? filename
+          : `icon_${canvas.height}_f${fontSizeInput.value}_x${xOffsetInput.value}_y${yOffsetInput.value}_${input.value}.png`;
+        link.href = dataUrl;
+        link.click();
+      };
 
       saveButton.addEventListener("click", function () {
         renderEmojiButton.click();
+        downloadCanvas();
+      });
 
-        const dataUrl = canvas.toDataURL("image/png");
-        const link = document.createElement("a");
-        link.download = `icon_${canvas.height}_f${fontSizeInput.value}_${input.value}.png`;
-        link.href = dataUrl;
-        link.click();
+      fabGitHubButton.addEventListener("click", function () {
+        window.location.href =
+          "https://github.com/gnekich/emoji-to-image-via-html-canvas";
+      });
+
+      document
+        .getElementById("copyBase64")
+        .addEventListener("click", async function () {
+          const dataUrl = canvas.toDataURL("image/png");
+          const base64ImagePayload = dataUrl.split(",")[1];
+          navigator.clipboard.writeText(base64ImagePayload);
+        });
+
+      document
+        .getElementById("copyDataUrl")
+        .addEventListener("click", function () {
+          const dataUrl = canvas.toDataURL("image/png");
+          navigator.clipboard.writeText(dataUrl);
+        });
+
+      document
+        .getElementById("copyClipboardItem")
+        .addEventListener("click", async function () {
+          const dataUrl = canvas.toDataURL("image/png");
+          try {
+            const response = await fetch(dataUrl);
+            const blob = await response.blob();
+
+            navigator.clipboard.write([
+              new ClipboardItem({
+                "image/png": blob,
+              }),
+            ]);
+          } catch (error) {
+            console.error(error);
+          }
+        });
+
+      document
+        .getElementById("downloadCanvasButton")
+        .addEventListener("click", async function () {
+          downloadCanvas("canvas.png");
+        });
+
+      canvas.addEventListener("click", function () {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/*";
+        input.addEventListener("change", function () {
+          const file = this.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              const img = new Image();
+              img.onload = function () {
+                // Resize the canvas to match the image size
+                canvas.width = img.width;
+                canvas.height = img.height;
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(img, 0, 0, canvas.width, canvas.height);
+              };
+              img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+        input.click();
       });
 
       document.addEventListener("DOMContentLoaded", function () {
